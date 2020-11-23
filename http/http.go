@@ -3,8 +3,7 @@ package http
 import (
 	"bytes"
 	"crypto/tls"
-	"errors"
-	"github.com/golang/glog"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net"
@@ -37,8 +36,11 @@ func NewHttpHandle(url string, opts ...httpOptions) *httpHandle {
 func (h *httpHandle) Post(data []byte) ([]byte, error) {
 	request, err := http.NewRequest("POST", h.url, bytes.NewReader(data))
 	if err != nil {
-		glog.Error("http new request error: ", err.Error(), ", ", string(data))
-		return nil, err
+		return nil, HttpError{
+			level:       1,
+			error:       err.Error(),
+			callerError: "http new request error",
+		}
 	}
 
 	if len(h.contentType) > 0 {
@@ -59,20 +61,31 @@ func (h *httpHandle) Post(data []byte) ([]byte, error) {
 	client := &http.Client{Transport: tr}
 	resp, err := client.Do(request)
 	if err != nil {
-		glog.Error(err.Error())
-		return nil, err
+		return nil, HttpError{
+			level:       2,
+			error:       err.Error(),
+			callerError: "http client do error",
+		}
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		glog.Error(resp.Status)
-		return nil, errors.New(resp.Status)
+		return nil, HttpError{
+			level:       3,
+			statusCode:  resp.StatusCode,
+			error:       resp.Status,
+			callerError: fmt.Sprint("http status error [%d]", resp.StatusCode),
+		}
 	}
 
 	respBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		glog.Error(err.Error())
-		return nil, err
+		return nil, HttpError{
+			level:       4,
+			statusCode:  resp.StatusCode,
+			error:       err.Error(),
+			callerError: fmt.Sprint("http read body error"),
+		}
 	}
 	return respBytes, nil
 }
@@ -82,8 +95,11 @@ func (h *httpHandle) Get() ([]byte, error) {
 	client := &http.Client{Timeout: h.timeout}
 	resp, err := client.Get(h.url)
 	if err != nil {
-		glog.Error(err)
-		return nil, err
+		return nil, HttpError{
+			level:       2,
+			error:       err.Error(),
+			callerError: "http client do error",
+		}
 	}
 	defer resp.Body.Close()
 
@@ -98,8 +114,12 @@ func (h *httpHandle) Get() ([]byte, error) {
 		if err != nil && err == io.EOF {
 			break
 		} else if err != nil {
-			glog.Error(err)
-			return nil, err
+			return nil, HttpError{
+				level:       4,
+				statusCode:  resp.StatusCode,
+				error:       err.Error(),
+				callerError: fmt.Sprint("http read body error"),
+			}
 		}
 	}
 
