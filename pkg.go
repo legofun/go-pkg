@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"math/rand"
+	"net/url"
 	"runtime"
 	"strings"
 	"time"
@@ -35,6 +36,12 @@ func GetTimeNow(time2 ...time.Time) string {
 	}
 
 	return time2[0].Format(DATETIME_LAYOUT)
+}
+
+//URL字符解码
+func UrlDecode(encodeStr string) string {
+	tmp, _ := url.PathUnescape(encodeStr)
+	return tmp
 }
 
 //PrintJSON 将struct序列化json打印日志
