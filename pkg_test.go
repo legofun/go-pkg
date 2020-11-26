@@ -92,3 +92,32 @@ func Test_UrlDecode(t *testing.T) {
 		})
 	}
 }
+
+func TestRunFuncName(t *testing.T) {
+	type args struct {
+		skip []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "获取当前函数名",
+			args: args{},
+			want: "github.com/legofun/go-pkg.TestRunFuncName.func1",
+		},
+		{
+			name: "获取上层调用函数名",
+			args: args{skip: []int{2}},
+			want: "testing.tRunner",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := RunFuncName(tt.args.skip...); got != tt.want {
+				t.Errorf("RunFuncName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -16,17 +16,18 @@ import (
 )
 
 // 获取正在运行的函数名
-func RunFuncName() string {
-	pc := make([]uintptr, 1)
-	runtime.Callers(2, pc)
-	f := runtime.FuncForPC(pc[0])
-
-	split := strings.Split(f.Name(), ".")
-	if len(split) > 1 {
-		return split[1]
+// @param skip 函数调用层级，1：当前调用函数，2：当前函数上层调用函数，以此类推
+func RunFuncName(skip ...int) string {
+	if len(skip) == 0 {
+		skip = []int{2}
+	} else {
+		skip[0] += 1
 	}
 
-	return f.Name()
+	pc := make([]uintptr, 1)
+	runtime.Callers(skip[0], pc)
+
+	return runtime.FuncForPC(pc[0]).Name()
 }
 
 //获取当前时间
@@ -34,7 +35,7 @@ func GetTimeNow(time2 ...time.Time) string {
 	if len(time2) == 0 {
 		return time.Now().Format(DATETIME_LAYOUT)
 	}
-
+	log.Println(RunFuncName())
 	return time2[0].Format(DATETIME_LAYOUT)
 }
 
