@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 // 获取正在运行的函数名
@@ -66,6 +67,15 @@ func GetGuid32() string {
 //生成36位Guid字串
 func GetGuid36() string {
 	return uuid.New().String()
+}
+
+//元转分
+func YuanToFen(f float64) int {
+	decimalValue := decimal.NewFromFloat(f)
+	decimalValue = decimalValue.Mul(decimal.NewFromInt(100))
+	res, _ := decimalValue.Float64()
+
+	return int(res)
 }
 
 //获取随机字符串，指定长度

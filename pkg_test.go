@@ -121,3 +121,36 @@ func TestRunFuncName(t *testing.T) {
 		})
 	}
 }
+
+func TestYuanToFen(t *testing.T) {
+	type args struct {
+		f float64
+	}
+	tests := []struct {
+		name string
+		args args
+		want int
+	}{
+		{
+			name: "test1",
+			args: args{
+				f: 4.2,
+			},
+			want: 420,
+		},
+		{
+			name: "test2",
+			args: args{
+				f: 2.01,
+			},
+			want: 201,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := YuanToFen(tt.args.f); got != tt.want {
+				t.Errorf("YuanToFen() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
